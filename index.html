@@ -4,8 +4,55 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TimeBar — Progresso do Tempo</title>
+<link id="favicon" rel="icon" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;700&family=DM+Serif+Display&family=Cutive+Mono&family=Nunito:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;700&family=DM+Serif+Display&family=Cutive+Mono&family=Nunito:wght@300;400;600;800&family=Righteous&family=Audiowide&family=UnifrakturMaguntia&family=MedievalSharp&family=IM+Fell+English:ital@0;1&family=Press+Start+2P&display=swap" rel="stylesheet">
+<script>
+  // Animated favicon — spinning progress ring
+  // Updates every 50ms when timer is running, idle spin otherwise
+  let faviconAngle = 0;
+  let faviconProgress = 0; // 0–1
+  let faviconMode = 'idle'; // 'idle' | 'running' | 'done'
+
+  function makeFaviconSVG(angle, progress, mode) {
+    const r = 14, cx = 16, cy = 16, stroke = 3;
+    const circ = 2 * Math.PI * r;
+
+    // Track colour based on mode
+    const trackColor  = mode === 'idle' ? '#333' : '#222';
+    const fillColor   = mode === 'done'    ? '#00ee77'
+                      : mode === 'running' ? '#7c6cfc'
+                      : '#555';
+    const dashOffset  = circ * (1 - progress);
+
+    // Idle: spinning dash; Running: progress arc; Done: full green ring
+    const dashArray  = mode === 'idle' ? `${circ * 0.28} ${circ * 0.72}` : `${circ}`;
+    const transform  = mode === 'idle'
+      ? `rotate(${angle} ${cx} ${cy})`
+      : `rotate(-90 ${cx} ${cy})`;
+    const offset     = mode === 'idle' ? 0 : dashOffset;
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${trackColor}" stroke-width="${stroke}"/>
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+    stroke="${fillColor}" stroke-width="${stroke}"
+    stroke-linecap="round"
+    stroke-dasharray="${dashArray}"
+    stroke-dashoffset="${offset}"
+    transform="${transform}"/>
+</svg>`;
+  }
+
+  function updateFavicon() {
+    if (faviconMode === 'idle') faviconAngle = (faviconAngle + 4) % 360;
+    const svg = makeFaviconSVG(faviconAngle, faviconProgress, faviconMode);
+    document.getElementById('favicon').href =
+      'data:image/svg+xml,' + encodeURIComponent(svg);
+  }
+
+  // Start idle spin immediately
+  setInterval(updateFavicon, 50);
+</script>
 
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -124,6 +171,71 @@
     --radius: 12px;
   }
 
+  /* ══ SCENE ══ */
+  body.theme-scene {
+    --bg: #0d001a;
+    --surface: #1a0030;
+    --border: #ff00ff55;
+    --text: #ff88ff;
+    --muted: #883388;
+    --accent: #ff00cc;
+    --accent2: #00ffff;
+    --bar-bg: #0a0015;
+    --bar-fill: linear-gradient(90deg, #ff00cc, #aa00ff, #00ffff);
+    --font-main: 'Righteous', cursive;
+    --font-display: 'Righteous', cursive;
+    --radius: 8px;
+  }
+
+
+  /* ══ Y2K ══ */
+  body.theme-y2k {
+    --bg: #e8f0ff;
+    --surface: rgba(255,255,255,0.75);
+    --border: rgba(100,160,255,0.5);
+    --text: #1040c0;
+    --muted: #6080c0;
+    --accent: #0050ff;
+    --accent2: #cc00ff;
+    --bar-bg: rgba(180,210,255,0.4);
+    --bar-fill: linear-gradient(90deg, #0050ff, #cc00ff, #00ccff);
+    --font-main: 'Audiowide', cursive;
+    --font-display: 'Audiowide', cursive;
+    --radius: 14px;
+  }
+
+  /* ══ MEDIEVAL ══ */
+  body.theme-medieval {
+    --bg: #1c1208;
+    --surface: #2a1c0a;
+    --border: #c8902055;
+    --text: #f0d080;
+    --muted: #8a6030;
+    --accent: #d4a020;
+    --accent2: #c06010;
+    --bar-bg: #120c04;
+    --bar-fill: linear-gradient(90deg, #8a3000, #d4a020, #c8c060);
+    --font-main: 'IM Fell English', serif;
+    --font-display: 'UnifrakturMaguntia', cursive;
+    --radius: 6px;
+  }
+
+  /* ══ GOTHIC ══ */
+  body.theme-gothic {
+    --bg: #080304;
+    --surface: #100408;
+    --border: #aa001833;
+    --text: #e8c8cc;
+    --muted: #6a2a30;
+    --accent: #cc0020;
+    --accent2: #880010;
+    --bar-bg: #0a0205;
+    --bar-fill: linear-gradient(90deg, #4a0008, #cc0020, #ff2244);
+    --font-main: 'IM Fell English', serif;
+    --font-display: 'UnifrakturMaguntia', cursive;
+    --radius: 4px;
+  }
+
   /* ═══════════ BASE ═══════════ */
 
   body {
@@ -175,6 +287,82 @@
     background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255,102,0,0.05) 1px, rgba(255,102,0,0.05) 2px);
     pointer-events: none;
     z-index: 9999;
+  }
+
+  /* ══ SCENE background: deep purple with neon splatter ══ */
+  body.theme-scene::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 10% 20%, rgba(255,0,204,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 90% 80%, rgba(0,255,255,0.14) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 50% 50%, rgba(180,0,255,0.1) 0%, transparent 70%),
+      #0d001a;
+    z-index: -2; pointer-events: none;
+  }
+  body.theme-scene::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent, transparent 40px,
+      rgba(255,0,200,0.02) 40px, rgba(255,0,200,0.02) 41px
+    );
+    z-index: -1; pointer-events: none;
+  }
+
+  /* ══ Y2K background: chrome gradient + orbs ══ */
+  body.theme-y2k::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: linear-gradient(160deg, #dceeff 0%, #f0e8ff 40%, #e0f8ff 70%, #d8e8ff 100%);
+    z-index: -2; pointer-events: none;
+  }
+  body.theme-y2k::after {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(circle 300px at 15% 25%, rgba(120,180,255,0.35) 0%, transparent 70%),
+      radial-gradient(circle 200px at 85% 70%, rgba(200,100,255,0.25) 0%, transparent 70%),
+      radial-gradient(circle 150px at 60% 15%, rgba(100,220,255,0.2) 0%, transparent 70%);
+    z-index: -1; pointer-events: none;
+  }
+
+  /* ══ MEDIEVAL: parchment texture lines ══ */
+  body.theme-medieval::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 100% 60% at 50% 0%, rgba(200,144,32,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 0% 100%, rgba(160,80,0,0.1) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(200,144,32,0.04) 28px, rgba(200,144,32,0.04) 29px);
+    z-index: -2; pointer-events: none;
+  }
+  body.theme-medieval::after {
+    content: '✦ ✦ ✦';
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+    color: rgba(212,160,32,0.2);
+    font-size: 1.2rem;
+    letter-spacing: 1rem;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ══ GOTHIC: dark fog + vignette ══ */
+  body.theme-gothic::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(160,0,30,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 100% 40% at 50% 100%, rgba(100,0,10,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 20% 40%, rgba(80,0,15,0.15) 0%, transparent 60%);
+    z-index: -2; pointer-events: none;
+  }
+  body.theme-gothic::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(0,0,0,0.65) 100%);
+    z-index: -1; pointer-events: none;
   }
 
   /* Soft floating blobs */
@@ -253,44 +441,104 @@
   /* ═══════════ THEME SWITCHER ═══════════ */
 
   .theme-bar {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
     margin-bottom: 40px;
   }
 
   .theme-btn {
-    padding: 8px 18px;
-    border: 1.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 8px 12px;
+    border: 2px solid transparent;
     background: var(--surface);
     color: var(--muted);
     font-family: var(--font-main);
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 0.7rem;
+    font-weight: 700;
     cursor: pointer;
-    border-radius: var(--radius);
-    transition: all 0.25s;
-    letter-spacing: 0.05em;
+    border-radius: 14px;
+    transition: all 0.22s cubic-bezier(.4,0,.2,1);
+    letter-spacing: 0.07em;
     text-transform: uppercase;
     backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
   }
+
+  /* colour swatch inside each button */
+  .theme-btn::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 28px;
+    border-radius: 8px;
+    transition: transform 0.22s;
+    flex-shrink: 0;
+    pointer-events: none;
+  }
+
+  .theme-btn::after {
+    pointer-events: none;
+  }
+
+  /* individual swatches */
+  [data-theme="minimal"]::before   { background: linear-gradient(135deg, #f5f5f0 50%, #1a1a1a 50%); }
+  [data-theme="aero"]::before      { background: linear-gradient(135deg, #a8d8f0, #c8e8ff, #b8d4f8); }
+  [data-theme="terminal"]::before  { background: linear-gradient(135deg, #000a06, #00ff44 150%); }
+  [data-theme="retro"]::before     { background: linear-gradient(135deg, #1a0a00, #ff6600, #ffcc00); }
+  [data-theme="soft"]::before      { background: linear-gradient(135deg, #fdf0f8, #d060a0, #a060d8); }
+  [data-theme="dark"]::before      { background: linear-gradient(135deg, #08080c, #7c6cfc, #fc6c9a); }
+  [data-theme="scene"]::before     { background: linear-gradient(135deg, #0d001a, #ff00cc, #00ffff); }
+  [data-theme="y2k"]::before       { background: linear-gradient(135deg, #dceeff, #0050ff, #cc00ff); }
+  [data-theme="medieval"]::before  { background: linear-gradient(135deg, #1c1208, #d4a020, #c8c060); }
+  [data-theme="gothic"]::before    { background: linear-gradient(135deg, #080304, #cc0020, #ff2244); }
 
   .theme-btn:hover {
     border-color: var(--accent);
-    color: var(--accent);
-    transform: translateY(-2px);
+    color: var(--text);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 20%, transparent);
   }
+
+  .theme-btn:hover::before { transform: scale(1.05); }
 
   .theme-btn.active {
-    background: var(--accent);
     border-color: var(--accent);
-    color: var(--bg, white);
-    color: #fff;
+    color: var(--text);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
   }
 
-  body.theme-minimal .theme-btn.active { color: #fff; }
-  body.theme-soft .theme-btn.active { color: #fff; }
+  .theme-btn.active::after {
+    content: '✓';
+    position: absolute;
+    top: 6px; right: 8px;
+    font-size: 0.65rem;
+    color: var(--accent);
+    font-weight: 900;
+  }
+
+  /* light theme label colour fixes */
+  body.theme-minimal .theme-btn  { color: #999990; background: #fff; }
+  body.theme-minimal .theme-btn.active { color: #1a1a1a; }
+  body.theme-aero .theme-btn     { background: rgba(255,255,255,0.55); color: #5a8aac; border-color: rgba(255,255,255,0.7); }
+  body.theme-aero .theme-btn.active { color: #0078d4; }
+  body.theme-y2k .theme-btn      { background: rgba(255,255,255,0.6); color: #6080c0; border-color: rgba(120,180,255,0.4); }
+  body.theme-y2k .theme-btn.active { color: #0050ff; }
+
+  @media (max-width: 600px) {
+    .theme-bar { grid-template-columns: repeat(5, 1fr); gap: 7px; }
+    .theme-btn { padding: 10px 4px 8px; font-size: 0.6rem; }
+    .theme-btn::before { height: 22px; }
+  }
+  @media (max-width: 400px) {
+    .theme-bar { grid-template-columns: repeat(4, 1fr); }
+  }
+
+
 
   /* ═══════════ CARD ═══════════ */
 
@@ -459,6 +707,7 @@
     background: rgba(255,255,255,0.15);
     transform: translateX(-100%);
     transition: transform 0.4s;
+    pointer-events: none;
   }
 
   .btn-start:hover::before { transform: translateX(0); }
@@ -774,7 +1023,285 @@
     color: white;
   }
 
-  /* ═══════════ AERO SPECIAL DECORATIONS ═══════════ */
+  /* ══ SCENE cards & effects ══ */
+  body.theme-scene .card {
+    background: rgba(30,0,50,0.85);
+    border: 1.5px solid rgba(255,0,204,0.35);
+    box-shadow: 0 0 30px rgba(255,0,204,0.1), inset 0 0 40px rgba(180,0,255,0.05);
+    backdrop-filter: blur(20px);
+  }
+  body.theme-scene .card-title { color: var(--accent); text-shadow: 0 0 10px var(--accent); }
+  body.theme-scene .logo {
+    background: linear-gradient(135deg, #ff00cc, #aa00ff, #00ffff);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    filter: drop-shadow(0 0 12px #ff00cc);
+    animation: sceneFlicker 3s ease-in-out infinite;
+  }
+  @keyframes sceneFlicker {
+    0%,100% { filter: drop-shadow(0 0 12px #ff00cc); }
+    50% { filter: drop-shadow(0 0 24px #00ffff); }
+  }
+  body.theme-scene .big-timer {
+    background: linear-gradient(135deg, #ff00cc, #00ffff);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    animation: sceneFlicker 3s ease-in-out infinite;
+  }
+  body.theme-scene .progress-pct { text-shadow: 0 0 20px var(--accent); }
+  body.theme-scene .bar-track {
+    height: 26px;
+    border: 1.5px solid rgba(255,0,204,0.4);
+    box-shadow: 0 0 12px rgba(255,0,204,0.2), inset 0 0 12px rgba(180,0,255,0.1);
+  }
+  body.theme-scene .bar-fill {
+    box-shadow: 0 0 20px rgba(255,0,204,0.5);
+    animation: sceneGlow 2s ease-in-out infinite alternate;
+  }
+  @keyframes sceneGlow {
+    from { box-shadow: 0 0 10px #ff00cc; }
+    to { box-shadow: 0 0 35px #ff00cc, 0 0 70px rgba(0,255,255,0.3); }
+  }
+  body.theme-scene .stat-box {
+    border-color: rgba(255,0,204,0.3);
+    background: rgba(20,0,40,0.7);
+  }
+  body.theme-scene .stat-value { color: var(--accent2); }
+  body.theme-scene .theme-btn.active { background: var(--accent); }
+  body.theme-scene .preset-btn { background: rgba(20,0,40,0.7); }
+  body.theme-scene .preset-name { color: var(--accent); }
+
+  /* ══ Y2K cards & effects ══ */
+  body.theme-y2k .card {
+    background: rgba(255,255,255,0.65);
+    border: 1.5px solid rgba(120,180,255,0.6);
+    box-shadow:
+      0 8px 32px rgba(0,80,255,0.12),
+      inset 0 1px 0 rgba(255,255,255,0.95),
+      inset 0 -1px 0 rgba(0,80,255,0.1);
+    backdrop-filter: blur(24px);
+  }
+  body.theme-y2k .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #0050ff, #cc00ff, #00ccff, #0050ff);
+    background-size: 200% 100%;
+    animation: y2kRainbow 3s linear infinite;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  body.theme-y2k .card { position: relative; overflow: visible; }
+  @keyframes y2kRainbow {
+    from { background-position: 0% 0%; }
+    to { background-position: 200% 0%; }
+  }
+  body.theme-y2k .logo {
+    background: linear-gradient(135deg, #0050ff, #cc00ff, #00ccff);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    filter: drop-shadow(0 2px 8px rgba(0,80,255,0.3));
+    letter-spacing: 0.12em;
+  }
+  body.theme-y2k .big-timer {
+    background: linear-gradient(135deg, #0050ff, #cc00ff);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  body.theme-y2k .bar-track {
+    height: 28px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(120,180,255,0.7);
+    background: rgba(200,225,255,0.5);
+    box-shadow: inset 0 2px 6px rgba(0,80,255,0.12), 0 2px 12px rgba(0,80,255,0.1);
+  }
+  body.theme-y2k .bar-fill {
+    border-radius: 999px;
+    box-shadow: 0 0 14px rgba(0,80,255,0.4);
+  }
+  body.theme-y2k .bar-fill::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.6), transparent);
+    border-radius: 999px;
+  }
+  body.theme-y2k .stat-box {
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(120,180,255,0.5);
+    backdrop-filter: blur(10px);
+  }
+  body.theme-y2k .preset-btn {
+    background: rgba(255,255,255,0.5);
+    border: 1.5px solid rgba(120,180,255,0.5);
+    backdrop-filter: blur(10px);
+  }
+  body.theme-y2k .mode-tab.active { background: rgba(255,255,255,0.9); }
+
+  /* ══ MEDIEVAL cards & effects ══ */
+  body.theme-medieval .card {
+    background: rgba(42,28,10,0.96);
+    border: 2px solid rgba(200,144,32,0.4);
+    box-shadow: 0 4px 0 rgba(180,80,0,0.4), inset 0 0 60px rgba(200,100,0,0.05);
+    position: relative;
+  }
+  body.theme-medieval .card::before {
+    content: '❧';
+    position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+    color: rgba(212,160,32,0.5);
+    font-size: 1.4rem;
+    line-height: 0;
+    top: 0px;
+  }
+  body.theme-medieval .card::after {
+    content: '';
+    position: absolute; inset: 4px;
+    border: 1px solid rgba(200,144,32,0.15);
+    border-radius: 3px;
+    pointer-events: none;
+  }
+  body.theme-medieval .card-title {
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  }
+  body.theme-medieval .logo {
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+    color: var(--accent);
+    text-shadow: 0 2px 0 rgba(160,80,0,0.8), 0 0 20px rgba(212,160,32,0.4);
+    -webkit-text-fill-color: initial;
+  }
+  body.theme-medieval .tagline {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    letter-spacing: 0.05em;
+  }
+  body.theme-medieval .big-timer {
+    color: var(--accent);
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    text-shadow: 0 0 12px rgba(212,160,32,0.4);
+  }
+  body.theme-medieval .bar-track {
+    height: 26px;
+    border: 2px solid rgba(200,144,32,0.5);
+    border-radius: 3px;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.5), 0 2px 0 rgba(180,80,0,0.4);
+  }
+  body.theme-medieval .bar-fill {
+    border-radius: 1px;
+  }
+  body.theme-medieval .bar-fill::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent, transparent 14px,
+      rgba(255,255,255,0.08) 14px, rgba(255,255,255,0.08) 15px
+    );
+  }
+  body.theme-medieval .stat-box {
+    border: 1.5px solid rgba(200,144,32,0.4);
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.3);
+  }
+  body.theme-medieval .stat-value { color: var(--accent); font-family: 'IM Fell English', serif; font-style: italic; }
+  body.theme-medieval .preset-name { font-family: 'IM Fell English', serif; font-style: italic; text-transform: none; }
+  body.theme-medieval .btn-start {
+    background: linear-gradient(180deg, #c07010, #7a3800);
+    border: 2px solid rgba(200,144,32,0.6);
+    box-shadow: 0 3px 0 rgba(100,40,0,0.6), inset 0 1px 0 rgba(255,200,100,0.2);
+    letter-spacing: 0.05em;
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+  }
+  body.theme-medieval .btn-start:hover { background: linear-gradient(180deg, #d08020, #8a4000); }
+  body.theme-medieval .progress-pct { color: var(--accent); text-shadow: 0 0 8px rgba(212,160,32,0.5); }
+
+  /* ══ GOTHIC cards & effects ══ */
+  body.theme-gothic .card {
+    background: rgba(10,4,6,0.97);
+    border: 1.5px solid rgba(170,0,24,0.4);
+    box-shadow:
+      0 0 30px rgba(130,0,20,0.15),
+      inset 0 0 60px rgba(80,0,12,0.12),
+      0 2px 0 rgba(200,0,30,0.3);
+    position: relative;
+  }
+  body.theme-gothic .card::before {
+    content: '†';
+    position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    color: rgba(204,0,32,0.5);
+    font-size: 1.6rem;
+    pointer-events: none;
+  }
+  body.theme-gothic .card-title {
+    color: rgba(180,0,30,0.85);
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+  }
+  body.theme-gothic .logo {
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+    color: var(--accent);
+    text-shadow:
+      0 0 20px rgba(204,0,32,0.7),
+      0 0 60px rgba(204,0,32,0.25),
+      0 2px 0 rgba(60,0,5,0.9);
+    -webkit-text-fill-color: initial;
+    animation: gothicPulse 4s ease-in-out infinite;
+  }
+  @keyframes gothicPulse {
+    0%,100% { text-shadow: 0 0 20px rgba(204,0,32,0.7), 0 2px 0 rgba(60,0,5,0.9); }
+    50% { text-shadow: 0 0 45px rgba(255,30,60,0.6), 0 0 90px rgba(180,0,20,0.3), 0 2px 0 rgba(60,0,5,0.9); }
+  }
+  body.theme-gothic .tagline { font-family: 'IM Fell English', serif; font-style: italic; }
+  body.theme-gothic .big-timer {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    color: var(--accent);
+    text-shadow: 0 0 25px rgba(204,0,32,0.6);
+    animation: gothicPulse 4s ease-in-out infinite;
+  }
+  body.theme-gothic .bar-track {
+    height: 24px;
+    border: 1.5px solid rgba(170,0,24,0.5);
+    border-radius: 3px;
+    box-shadow: 0 0 12px rgba(130,0,20,0.25), inset 0 0 12px rgba(50,0,8,0.6);
+  }
+  body.theme-gothic .bar-fill {
+    border-radius: 2px;
+    box-shadow: 0 0 20px rgba(204,0,32,0.55);
+    animation: gothicBarGlow 3s ease-in-out infinite alternate;
+  }
+  @keyframes gothicBarGlow {
+    from { box-shadow: 0 0 10px rgba(204,0,32,0.5); }
+    to { box-shadow: 0 0 35px rgba(255,30,50,0.6), 0 0 55px rgba(180,0,20,0.3); }
+  }
+  body.theme-gothic .bar-fill::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent, transparent 10px,
+      rgba(255,255,255,0.04) 10px, rgba(255,255,255,0.04) 11px
+    );
+  }
+  body.theme-gothic .stat-box {
+    border: 1px solid rgba(170,0,24,0.35);
+    box-shadow: inset 0 0 10px rgba(50,0,8,0.5);
+  }
+  body.theme-gothic .stat-value { color: var(--accent); font-family: 'IM Fell English', serif; font-style: italic; }
+  body.theme-gothic .progress-pct { text-shadow: 0 0 15px rgba(204,0,32,0.7); }
+  body.theme-gothic .btn-start {
+    background: linear-gradient(180deg, #aa0018, #550008);
+    border: 1.5px solid rgba(204,0,32,0.55);
+    box-shadow: 0 3px 0 rgba(40,0,5,0.9), inset 0 1px 0 rgba(255,100,120,0.15);
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+  }
+  body.theme-gothic .btn-start:hover { background: linear-gradient(180deg, #cc001e, #770010); }
+  body.theme-gothic .preset-name { font-family: 'IM Fell English', serif; font-style: italic; text-transform: none; }
+  body.theme-gothic .preset-btn { background: rgba(10,2,4,0.9); border-color: rgba(170,0,24,0.3); }
+
+  /* ══ AERO SPECIAL DECORATIONS ══ */
 
   body.theme-aero .card {
     position: relative;
@@ -897,6 +1424,7 @@
     background: var(--accent);
     opacity: 0;
     transition: opacity 0.22s;
+    pointer-events: none;
   }
 
   .preset-btn:hover::before { opacity: 0.08; }
@@ -960,6 +1488,118 @@
     letter-spacing: 0.02em;
   }
 
+  body.theme-scene .preset-btn:hover {
+    box-shadow: 0 0 24px rgba(255,0,204,0.35);
+    border-color: var(--accent);
+  }
+
+  body.theme-y2k .preset-btn:hover {
+    box-shadow: 0 6px 20px rgba(0,80,255,0.2);
+    border-color: var(--accent);
+  }
+
+  body.theme-medieval .preset-btn:hover {
+    box-shadow: 3px 3px 0 rgba(200,144,32,0.5);
+    transform: translate(-2px, -2px);
+    border-color: var(--accent);
+  }
+
+  body.theme-gothic .preset-btn:hover {
+    box-shadow: 0 0 20px rgba(204,0,32,0.3);
+    border-color: var(--accent);
+  }
+
+  /* ═══════════ DURATION QUICK-PICK SLIDER ═══════════ */
+
+  .dur-slider-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 4px 0 2px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .dur-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 99px;
+    background: var(--bar-bg);
+    border: 1.5px solid var(--border);
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    /* filled portion via JS inline style on --pct */
+    background: linear-gradient(
+      90deg,
+      var(--accent) 0%,
+      var(--accent) var(--pct, 25%),
+      var(--bar-bg) var(--pct, 25%),
+      var(--bar-bg) 100%
+    );
+  }
+
+  .dur-slider:focus { border-color: var(--accent); }
+
+  .dur-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--surface);
+    box-shadow: 0 0 0 1.5px var(--accent), 0 2px 8px rgba(0,0,0,0.3);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .dur-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent), 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .dur-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--surface);
+    box-shadow: 0 0 0 1.5px var(--accent);
+    cursor: pointer;
+  }
+
+  .dur-ticks {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2px;
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+  }
+
+  .dur-ticks span {
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: color 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+    text-align: center;
+    min-width: 0;
+    pointer-events: all;
+    -webkit-user-drag: none;
+  }
+
+  .dur-ticks span:hover { color: var(--text); }
+  .dur-ticks span.active { color: var(--accent); font-weight: 700; }
+
+  body.theme-terminal .dur-slider::-webkit-slider-thumb { box-shadow: 0 0 0 1.5px var(--accent), 0 0 10px var(--accent); }
+  body.theme-scene .dur-slider::-webkit-slider-thumb { box-shadow: 0 0 0 1.5px var(--accent), 0 0 12px var(--accent); }
+  body.theme-gothic .dur-slider::-webkit-slider-thumb { box-shadow: 0 0 0 1.5px var(--accent), 0 0 10px var(--accent); }
+
   /* ═══════════ RESPONSIVE ═══════════ */
 
   @media (max-width: 500px) {
@@ -982,10 +1622,14 @@
   <div class="theme-bar">
     <button class="theme-btn" data-theme="minimal">Minimal</button>
     <button class="theme-btn" data-theme="aero">Frutiger Aero</button>
-    <button class="theme-btn" data-theme="terminal">terminal</button>
+    <button class="theme-btn" data-theme="terminal">Tech</button>
     <button class="theme-btn" data-theme="retro">Retro</button>
     <button class="theme-btn" data-theme="soft">Soft</button>
     <button class="theme-btn active" data-theme="dark">Dark</button>
+    <button class="theme-btn" data-theme="scene">Scene</button>
+    <button class="theme-btn" data-theme="y2k">Y2K</button>
+    <button class="theme-btn" data-theme="medieval">Medieval</button>
+    <button class="theme-btn" data-theme="gothic">Gótico</button>
   </div>
 
   <!-- PRESETS CARD -->
@@ -1050,6 +1694,26 @@
 
     <!-- DURATION MODE -->
     <div class="inputs-grid" id="mode-duration" style="display:none">
+
+      <!-- Quick-pick slider -->
+      <div class="input-group">
+        <label>Tempo rápido</label>
+        <div class="dur-slider-wrap">
+          <input type="range" id="durSlider" min="0" max="8" step="1" value="2" class="dur-slider">
+          <div class="dur-ticks">
+            <span data-val="0">0</span>
+            <span data-val="1">1m</span>
+            <span data-val="2">2m</span>
+            <span data-val="3">5m</span>
+            <span data-val="4">10m</span>
+            <span data-val="5">20m</span>
+            <span data-val="6">30m</span>
+            <span data-val="7">40m</span>
+            <span data-val="8">1h</span>
+          </div>
+        </div>
+      </div>
+
       <div class="input-row">
         <div class="input-group">
           <label>Horas</label>
@@ -1143,6 +1807,10 @@
 
 </div>
 
+<!-- CONFETTI CANVAS -->
+<canvas id="confettiCanvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:99999;display:none;"></canvas>
+
+
 <script>
   // ═══════════ PRESETS ═══════════
   const MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -1178,6 +1846,54 @@
     const dayPct = ((now - dayStart) / (dayEnd - dayStart) * 100).toFixed(1);
     document.getElementById('desc-day').textContent = `Hoje · ${dayPct}%`;
   }
+
+  // ═══════════ DURATION SLIDER ═══════════
+  const DUR_PRESETS = [0, 1, 2, 5, 10, 20, 30, 40, 60]; // minutes
+
+  function applySliderValue(idx) {
+    const mins = DUR_PRESETS[idx];
+    document.getElementById('durHours').value = Math.floor(mins / 60);
+    document.getElementById('durMin').value = mins % 60;
+    document.getElementById('durSec').value = 0;
+    // update fill
+    const pct = (idx / 8 * 100).toFixed(1) + '%';
+    document.getElementById('durSlider').style.setProperty('--pct', pct);
+    // update active tick
+    document.querySelectorAll('.dur-ticks span').forEach((s, i) => {
+      s.classList.toggle('active', i === idx);
+    });
+  }
+
+  const slider = document.getElementById('durSlider');
+  slider.addEventListener('input', () => applySliderValue(parseInt(slider.value)));
+
+  // tick labels also clickable
+  document.querySelectorAll('.dur-ticks span').forEach((span, i) => {
+    span.addEventListener('click', () => {
+      slider.value = i;
+      applySliderValue(i);
+    });
+  });
+
+  applySliderValue(2); // default: 2 min
+
+  // when user edits hours/min manually, snap slider to closest preset
+  ['durHours','durMin'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => {
+      const h = parseInt(document.getElementById('durHours').value) || 0;
+      const m = parseInt(document.getElementById('durMin').value) || 0;
+      const total = h * 60 + m;
+      let closest = 0, minDiff = Infinity;
+      DUR_PRESETS.forEach((p, i) => {
+        const d = Math.abs(p - total);
+        if (d < minDiff) { minDiff = d; closest = i; }
+      });
+      slider.value = closest;
+      const pct = (closest / 8 * 100).toFixed(1) + '%';
+      slider.style.setProperty('--pct', pct);
+      document.querySelectorAll('.dur-ticks span').forEach((s, i) => s.classList.toggle('active', i === closest));
+    });
+  });
 
   initPresetDescs();
 
@@ -1338,6 +2054,8 @@
     document.getElementById('configCard').style.display = 'none';
     document.getElementById('progressCard').classList.add('visible');
     document.getElementById('doneOverlay').classList.remove('visible');
+    faviconMode = 'running';
+    faviconProgress = 0;
 
     if (timerInterval) clearInterval(timerInterval);
     updateProgress();
@@ -1369,6 +2087,7 @@
     document.getElementById('barFill').style.width = pct.toFixed(2) + '%';
     document.getElementById('pctDisplay').textContent = pct.toFixed(1) + '%';
     document.getElementById('barLabel').textContent = isDuration ? 'Contagem Regressiva' : 'Decorrido';
+    faviconProgress = pct / 100;
 
     // Stats
     document.getElementById('statElapsed').textContent = fmtHuman(elapsed);
@@ -1386,12 +2105,230 @@
       document.getElementById('doneSub').textContent = isDuration
         ? 'Temporizador finalizado!'
         : 'Período concluído!';
+      faviconMode = 'done';
+      faviconProgress = 1;
+      triggerCelebration();
     }
+  }
+
+  // ═══════════════════════════════════════
+  // CONFETTI ENGINE
+  // ═══════════════════════════════════════
+  const confettiCanvas = document.getElementById('confettiCanvas');
+  const ctx2 = confettiCanvas.getContext('2d');
+  let confettiParticles = [];
+  let confettiRAF = null;
+  let confettiRunning = false;
+
+  const CONFETTI_COLORS = [
+    '#ff3355','#ffcc00','#33ddff','#bb44ff','#ff8800',
+    '#00ee77','#ff44bb','#4499ff','#ffee33','#ff5533','#aaffcc','#ff99cc'
+  ];
+
+  function spawnParticle(fromX, fromY) {
+    const size = Math.random() * 9 + 5;
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 8 + 3;
+    return {
+      x: fromX !== undefined ? fromX : Math.random() * confettiCanvas.width,
+      y: fromY !== undefined ? fromY : -20,
+      w: size,
+      h: size * (Math.random() * 0.5 + 0.3),
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      rot: Math.random() * Math.PI * 2,
+      rotV: (Math.random() - 0.5) * 0.22,
+      vx: fromX !== undefined ? Math.cos(angle) * speed : (Math.random() - 0.5) * 4,
+      vy: fromY !== undefined ? Math.sin(angle) * speed - 6 : Math.random() * 2 + 1,
+      gravity: 0.18,
+      drag: 0.99,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleV: Math.random() * 0.08 + 0.03,
+      opacity: 1,
+      shape: Math.random() < 0.4 ? 'circle' : Math.random() < 0.6 ? 'ribbon' : 'rect',
+    };
+  }
+
+  function launchConfetti() {
+    confettiCanvas.width  = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+    confettiCanvas.style.display = 'block';
+    confettiRunning = true;
+    confettiParticles = [];
+
+    // Burst from 3 cannon positions across top
+    const positions = [
+      window.innerWidth * 0.2,
+      window.innerWidth * 0.5,
+      window.innerWidth * 0.8,
+    ];
+
+    // Initial burst
+    positions.forEach(px => {
+      for (let i = 0; i < 60; i++) {
+        confettiParticles.push(spawnParticle(px, window.innerHeight * 0.35));
+      }
+    });
+
+    // Trickle more over 3 seconds
+    let trickleCount = 0;
+    const trickle = setInterval(() => {
+      if (!confettiRunning) { clearInterval(trickle); return; }
+      for (let i = 0; i < 12; i++) {
+        confettiParticles.push(spawnParticle());
+      }
+      trickleCount++;
+      if (trickleCount > 20) clearInterval(trickle);
+    }, 150);
+
+    if (confettiRAF) cancelAnimationFrame(confettiRAF);
+    drawConfetti();
+
+    setTimeout(stopConfetti, 7500);
+  }
+
+  function drawConfetti() {
+    ctx2.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+    confettiParticles = confettiParticles.filter(p => p.opacity > 0.02 && p.y < confettiCanvas.height + 30);
+
+    for (const p of confettiParticles) {
+      p.wobble += p.wobbleV;
+      p.vx = p.vx * p.drag + Math.sin(p.wobble) * 0.5;
+      p.vy += p.gravity;
+      p.vy *= p.drag;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.rotV;
+
+      const fadeStart = confettiCanvas.height * 0.7;
+      if (p.y > fadeStart) {
+        p.opacity = Math.max(0, 1 - (p.y - fadeStart) / (confettiCanvas.height * 0.3));
+      }
+
+      ctx2.save();
+      ctx2.globalAlpha = p.opacity;
+      ctx2.translate(p.x, p.y);
+      ctx2.rotate(p.rot);
+      ctx2.fillStyle = p.color;
+
+      if (p.shape === 'circle') {
+        ctx2.beginPath();
+        ctx2.ellipse(0, 0, p.w / 2, p.h / 2, 0, 0, Math.PI * 2);
+        ctx2.fill();
+      } else if (p.shape === 'ribbon') {
+        ctx2.beginPath();
+        ctx2.moveTo(-p.w / 2, -p.h / 6);
+        ctx2.bezierCurveTo(-p.w / 4, -p.h / 2, p.w / 4, p.h / 2, p.w / 2, p.h / 6);
+        ctx2.bezierCurveTo(p.w / 4, p.h / 2, -p.w / 4, -p.h / 2, -p.w / 2, -p.h / 6);
+        ctx2.fill();
+      } else {
+        ctx2.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      }
+      ctx2.restore();
+    }
+
+    if (confettiRunning || confettiParticles.length > 0) {
+      confettiRAF = requestAnimationFrame(drawConfetti);
+    } else {
+      confettiCanvas.style.display = 'none';
+    }
+  }
+
+  function stopConfetti() {
+    confettiRunning = false;
+    // let remaining fall naturally — RAF will stop itself
+  }
+
+  window.addEventListener('resize', () => {
+    if (confettiCanvas.style.display !== 'none') {
+      confettiCanvas.width  = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+  });
+
+  // ═══════════════════════════════════════
+  // WESTMINSTER CHIMES — Web Audio API
+  // Proper bell synthesis: 5 sine partials
+  // per note (fund + 2nd + min3rd + 5th + oct)
+  // with percussive attack + long exponential decay
+  // ═══════════════════════════════════════
+  function playBell(ac, freq, startTime, volume) {
+    // Bell partials: [ratio, relative amplitude]
+    const partials = [
+      [1,     0.40],
+      [2,     0.10],
+      [2.756, 0.18],
+      [3,     0.05],
+      [4.07,  0.07],
+    ];
+
+    const masterGain = ac.createGain();
+    masterGain.gain.setValueAtTime(volume, startTime);
+    masterGain.connect(ac.destination);
+
+    const decayTime = 2.8;
+
+    partials.forEach(([ratio, amp]) => {
+      const osc = ac.createOscillator();
+      const g   = ac.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq * ratio, startTime);
+
+      // Sharp attack, exponential bell decay
+      g.gain.setValueAtTime(0, startTime);
+      g.gain.linearRampToValueAtTime(amp, startTime + 0.003);
+      g.gain.setTargetAtTime(0, startTime + 0.003, decayTime * (1 / ratio));
+
+      osc.connect(g);
+      g.connect(masterGain);
+
+      osc.start(startTime);
+      osc.stop(startTime + decayTime * 3);
+    });
+  }
+
+  function playWestminster() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ac = new AC();
+
+    // Westminster quarter-chime in G major: G4 C5 B4 E4 / E4 B4 C5 G4 / G4 E4 B4 C5 / C5 B4 E4 G4
+    // Using the classic BBC peal frequencies
+    const Mi  = 329.63;  // E4
+    const Fás = 369.99;  // F#4
+    const Sols= 415.30;  // G#4
+    const Si  = 493.88;  // B4
+
+    const beat = 0.58;
+    const seq = [
+      // "Lord, through this hour" — Mi Sol# Fá# Si
+      [Mi,   1], [Sols, 1], [Fás, 1], [Si,  2.2],
+      // "Be Thou our guide"      — Mi Fá# Sol# Mi
+      [Mi,   1], [Fás,  1], [Sols,1], [Mi,  2.8],
+    ];
+
+    let t = ac.currentTime + 0.2;
+    seq.forEach(([freq, beats]) => {
+      playBell(ac, freq, t, 0.06);
+      t += beats * beat;
+    });
+  }
+
+  // ═══════════════════════════════════════
+  // TRIGGER on completion
+  // ═══════════════════════════════════════
+  function triggerCelebration() {
+    launchConfetti();
+    playWestminster();
   }
 
   // ═══════════ RESET ═══════════
   function resetProgress() {
     if (timerInterval) clearInterval(timerInterval);
+    stopConfetti();
+    faviconMode = 'idle';
+    faviconProgress = 0;
     document.getElementById('progressCard').classList.remove('visible');
     document.getElementById('doneOverlay').classList.remove('visible');
     document.getElementById('configCard').style.display = 'block';
