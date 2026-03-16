@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TimeBar — Progresso do Tempo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;700&family=DM+Serif+Display&family=Cutive+Mono&family=Nunito:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #2a2a3a;
+    --text: #e8e8f0;
+    --muted: #6a6a8a;
+    --accent: #7c6cfc;
+    --accent2: #fc6c9a;
+    --bar-bg: #1e1e2e;
+    --bar-fill: var(--accent);
+    --radius: 16px;
+    --font-main: 'Outfit', sans-serif;
+    --font-display: 'Orbitron', monospace;
+  }
+
+  /* ═══════════ THEMES ═══════════ */
+
+  body.theme-minimal {
+    --bg: #f5f5f0;
+    --surface: #ffffff;
+    --border: #e0e0d8;
+    --text: #1a1a1a;
+    --muted: #999990;
+    --accent: #1a1a1a;
+    --accent2: #888;
+    --bar-bg: #e8e8e0;
+    --bar-fill: #1a1a1a;
+    --font-main: 'DM Serif Display', serif;
+    --font-display: 'DM Serif Display', serif;
+  }
+
+  body.theme-aero {
+    --bg: linear-gradient(135deg, #a8d8f0 0%, #c8e8ff 30%, #e0f4ff 60%, #b8d4f8 100%);
+    --surface: rgba(255,255,255,0.55);
+    --border: rgba(255,255,255,0.8);
+    --text: #1a3a5c;
+    --muted: #5a8aac;
+    --accent: #0078d4;
+    --accent2: #00b4d8;
+    --bar-bg: rgba(255,255,255,0.4);
+    --bar-fill: linear-gradient(90deg, #00b4d8, #0078d4, #0050a0);
+    --font-main: 'Nunito', sans-serif;
+    --font-display: 'Nunito', sans-serif;
+    --radius: 20px;
+  }
+
+  body.theme-terminal {
+    --bg: #000a06;
+    --surface: #001008;
+    --border: #00ff4133;
+    --text: #00ff88;
+    --muted: #006633;
+    --accent: #00ff44;
+    --accent2: #00ccff;
+    --bar-bg: #001a0d;
+    --bar-fill: #00ff44;
+    --font-main: 'Space Mono', monospace;
+    --font-display: 'Orbitron', monospace;
+    --radius: 4px;
+  }
+
+  body.theme-retro {
+    --bg: #1a0a00;
+    --surface: #2a1200;
+    --border: #ff8c00aa;
+    --text: #ffb347;
+    --muted: #994400;
+    --accent: #ff6600;
+    --accent2: #ffcc00;
+    --bar-bg: #0d0600;
+    --bar-fill: linear-gradient(90deg, #ff3300, #ff6600, #ffcc00);
+    --font-main: 'Cutive Mono', monospace;
+    --font-display: 'Cutive Mono', monospace;
+    --radius: 2px;
+  }
+
+  body.theme-soft {
+    --bg: #fdf0f8;
+    --surface: #fff5fc;
+    --border: #f0c8e8;
+    --text: #4a2040;
+    --muted: #b080a0;
+    --accent: #d060a0;
+    --accent2: #a060d8;
+    --bar-bg: #f5d8ee;
+    --bar-fill: linear-gradient(90deg, #d060a0, #a060d8, #60a0ff);
+    --font-main: 'Nunito', sans-serif;
+    --font-display: 'Nunito', sans-serif;
+    --radius: 20px;
+  }
+
+  body.theme-soft .bar-track,
+  body.theme-soft .bar-fill,
+  body.theme-soft .mode-tab,
+  body.theme-soft .mode-tabs,
+  body.theme-soft .theme-btn {
+    border-radius: 999px;
+  }
+
+  body.theme-dark {
+    --bg: #08080c;
+    --surface: #101018;
+    --border: #ffffff11;
+    --text: #c8c8d8;
+    --muted: #404055;
+    --accent: #7c6cfc;
+    --accent2: #fc6c9a;
+    --bar-bg: #1a1a28;
+    --bar-fill: linear-gradient(90deg, #7c6cfc, #fc6c9a);
+    --font-main: 'Outfit', sans-serif;
+    --font-display: 'Orbitron', monospace;
+    --radius: 12px;
+  }
+
+  /* ═══════════ BASE ═══════════ */
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Aero glassmorphism background */
+  body.theme-aero::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #a8d8f0 0%, #c8e8ff 30%, #e0f4ff 60%, #b8d4f8 100%);
+    z-index: -2;
+  }
+  body.theme-aero::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.6) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 80% 70%, rgba(180,220,255,0.5) 0%, transparent 60%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* terminal scanlines */
+  body.theme-terminal::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,68,0.03) 2px, rgba(0,255,68,0.03) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Retro noise */
+  body.theme-retro::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255,102,0,0.05) 1px, rgba(255,102,0,0.05) 2px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Soft floating blobs */
+  body.theme-soft::before {
+    content: '';
+    position: fixed;
+    top: -100px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(208,96,160,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+  }
+  body.theme-soft::after {
+    content: '';
+    position: fixed;
+    bottom: -100px; left: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(160,96,216,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ═══════════ LAYOUT ═══════════ */
+
+  .app {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  body.theme-dark .logo,
+  body.theme-terminal .logo {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  body.theme-terminal .logo {
+    text-shadow: 0 0 30px var(--accent);
+    filter: drop-shadow(0 0 10px var(--accent));
+  }
+
+  body.theme-retro .logo {
+    text-shadow: 0 0 20px var(--accent), 0 2px 0 #ff330099;
+  }
+
+  .tagline {
+    font-size: 0.9rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ═══════════ THEME SWITCHER ═══════════ */
+
+  .theme-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+
+  .theme-btn {
+    padding: 8px 18px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: var(--font-main);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: all 0.25s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    backdrop-filter: blur(10px);
+  }
+
+  .theme-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .theme-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg, white);
+    color: #fff;
+  }
+
+  body.theme-minimal .theme-btn.active { color: #fff; }
+  body.theme-soft .theme-btn.active { color: #fff; }
+
+  /* ═══════════ CARD ═══════════ */
+
+  .card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px;
+    margin-bottom: 28px;
+    transition: all 0.3s;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  body.theme-aero .card {
+    box-shadow: 0 8px 32px rgba(0,80,180,0.12), inset 0 1px 0 rgba(255,255,255,0.9);
+    border: 1.5px solid rgba(255,255,255,0.85);
+  }
+
+  body.theme-terminal .card {
+    box-shadow: 0 0 20px rgba(0,255,68,0.08), inset 0 0 40px rgba(0,255,68,0.02);
+  }
+
+  body.theme-retro .card {
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  body.theme-terminal .card-title { color: var(--accent); }
+
+  /* ═══════════ MODE TABS ═══════════ */
+
+  .mode-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 28px;
+    background: var(--bar-bg);
+    padding: 5px;
+    border-radius: var(--radius);
+  }
+
+  .mode-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-main);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: calc(var(--radius) - 4px);
+    transition: all 0.25s;
+    letter-spacing: 0.05em;
+  }
+
+  .mode-tab.active {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  body.theme-aero .mode-tab.active {
+    background: rgba(255,255,255,0.9);
+    box-shadow: 0 2px 12px rgba(0,80,180,0.15);
+  }
+
+  /* ═══════════ INPUTS ═══════════ */
+
+  .inputs-grid {
+    display: grid;
+    gap: 16px;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  input[type="date"],
+  input[type="time"],
+  input[type="number"],
+  select {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bar-bg);
+    border: 1.5px solid var(--border);
+    border-radius: calc(var(--radius) * 0.7);
+    color: var(--text);
+    font-family: var(--font-main);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  body.theme-terminal input:focus,
+  body.theme-terminal select:focus {
+    box-shadow: 0 0 15px rgba(0,255,68,0.2);
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+  }
+
+  body.theme-terminal input[type="date"]::-webkit-calendar-picker-indicator,
+  body.theme-terminal input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) sepia(1) hue-rotate(100deg) saturate(10);
+  }
+
+  .btn-start {
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: white;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-start::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.15);
+    transform: translateX(-100%);
+    transition: transform 0.4s;
+  }
+
+  .btn-start:hover::before { transform: translateX(0); }
+
+  .btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+
+  body.theme-retro .btn-start {
+    background: var(--accent);
+    box-shadow: 3px 3px 0 #ff330088;
+  }
+
+  body.theme-soft .btn-start {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+  }
+
+  /* ═══════════ PROGRESS SECTION ═══════════ */
+
+  .progress-card {
+    display: none;
+  }
+
+  .progress-card.visible {
+    display: block;
+    animation: fadeSlideUp 0.5s cubic-bezier(.4,0,.2,1);
+  }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .progress-label {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .progress-pct {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  body.theme-terminal .progress-pct {
+    text-shadow: 0 0 20px var(--accent);
+  }
+
+  body.theme-retro .progress-pct {
+    text-shadow: 0 0 12px var(--accent);
+  }
+
+  /* THE BAR */
+  .bar-track {
+    width: 100%;
+    height: 24px;
+    background: var(--bar-bg);
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    border: 1.5px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  body.theme-minimal .bar-track {
+    height: 4px;
+    border-radius: 2px;
+    border: none;
+  }
+
+  body.theme-terminal .bar-track {
+    height: 28px;
+    border-radius: 2px;
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(0,255,68,0.2), inset 0 0 10px rgba(0,255,68,0.05);
+  }
+
+  body.theme-retro .bar-track {
+    height: 28px;
+    border: 2px solid var(--accent);
+    border-radius: 0;
+  }
+
+  body.theme-soft .bar-track {
+    height: 28px;
+    background: #f5d8ee;
+    border: none;
+    border-radius: 999px;
+  }
+
+  body.theme-aero .bar-track {
+    height: 30px;
+    border: 1.5px solid rgba(255,255,255,0.9);
+    border-radius: 999px;
+    background: rgba(200,235,255,0.4);
+    box-shadow: inset 0 2px 4px rgba(0,80,180,0.1);
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: var(--bar-fill);
+    border-radius: inherit;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Shimmer */
+  .bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    from { left: -60%; }
+    to { left: 120%; }
+  }
+
+  /* terminal glitch bar */
+  body.theme-terminal .bar-fill::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(0,0,0,0.2) 8px, rgba(0,0,0,0.2) 9px);
+  }
+
+  body.theme-terminal .bar-fill {
+    box-shadow: 0 0 20px var(--accent), inset 0 0 10px rgba(255,255,255,0.1);
+    animation: terminalGlow 1.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes terminalGlow {
+    from { box-shadow: 0 0 10px var(--accent); }
+    to { box-shadow: 0 0 30px var(--accent), 0 0 60px rgba(0,255,68,0.3); }
+  }
+
+  /* Aero glass reflection */
+  body.theme-aero .bar-fill::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.5), transparent);
+    border-radius: inherit;
+  }
+
+  /* Retro bar stripes */
+  body.theme-retro .bar-fill::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 8px,
+      rgba(0,0,0,0.15) 8px,
+      rgba(0,0,0,0.15) 16px
+    );
+    animation: moveStripes 1s linear infinite;
+  }
+
+  @keyframes moveStripes {
+    from { background-position: 0 0; }
+    to { background-position: 22px 0; }
+  }
+
+  /* Soft bar particles */
+  body.theme-soft .bar-fill {
+    border-radius: 999px;
+  }
+
+  /* ═══════════ STATS ROW ═══════════ */
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .stat-box {
+    background: var(--bar-bg);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.7);
+    padding: 14px 10px;
+    text-align: center;
+  }
+
+  body.theme-aero .stat-box {
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.8);
+    backdrop-filter: blur(10px);
+  }
+
+  body.theme-retro .stat-box {
+    border-color: var(--accent);
+    border-width: 1.5px;
+  }
+
+  body.theme-terminal .stat-box {
+    border-color: var(--accent);
+    border-width: 1px;
+    box-shadow: 0 0 8px rgba(0,255,68,0.08);
+  }
+
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+    margin-bottom: 4px;
+    word-break: break-all;
+  }
+
+  body.theme-terminal .stat-value { color: var(--accent); }
+  body.theme-retro .stat-value { color: var(--accent2); }
+
+  .stat-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* ═══════════ MESSAGE ═══════════ */
+
+  .msg {
+    text-align: center;
+    padding: 20px;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  body.theme-terminal .msg {
+    text-shadow: 0 0 15px var(--accent);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  /* ═══════════ DONE SCREEN ═══════════ */
+
+  .done-overlay {
+    display: none;
+    text-align: center;
+    padding: 20px 0;
+    animation: fadeSlideUp 0.5s ease;
+  }
+
+  .done-overlay.visible { display: block; }
+
+  .done-emoji { font-size: 3rem; margin-bottom: 12px; }
+
+  .done-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--accent);
+    margin-bottom: 8px;
+    letter-spacing: 0.08em;
+  }
+
+  body.theme-terminal .done-title { text-shadow: 0 0 20px var(--accent); }
+
+  .done-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+
+  .btn-reset {
+    padding: 12px 32px;
+    background: transparent;
+    border: 1.5px solid var(--accent);
+    border-radius: var(--radius);
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .btn-reset:hover {
+    background: var(--accent);
+    color: white;
+  }
+
+  /* ═══════════ AERO SPECIAL DECORATIONS ═══════════ */
+
+  body.theme-aero .card {
+    position: relative;
+  }
+
+  body.theme-aero .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  /* ═══════════ EXTRAS ═══════════ */
+
+  .elapsed-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--bar-bg);
+    border-radius: 99px;
+    margin-top: 12px;
+    overflow: hidden;
+    opacity: 0.5;
+  }
+
+  .elapsed-fill {
+    height: 100%;
+    background: var(--accent2);
+    border-radius: 99px;
+    transition: width 0.5s;
+  }
+
+  .elapsed-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  /* timer digits display */
+  .big-timer {
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    margin: 16px 0;
+    line-height: 1;
+  }
+
+  body.theme-terminal .big-timer {
+    color: var(--accent);
+    text-shadow: 0 0 30px var(--accent);
+  }
+
+  body.theme-retro .big-timer {
+    color: var(--accent);
+    text-shadow: 0 0 15px var(--accent);
+  }
+
+  body.theme-soft .big-timer {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* separator between input and type */
+  .sep {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 4px 0;
+  }
+
+  .sep::before, .sep::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ═══════════ PRESETS ═══════════ */
+
+  .presets-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .preset-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 10px;
+    background: var(--bar-bg);
+    border: 1.5px solid var(--border);
+    border-radius: calc(var(--radius) * 0.8);
+    color: var(--text);
+    font-family: var(--font-main);
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .preset-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.22s;
+  }
+
+  .preset-btn:hover::before { opacity: 0.08; }
+
+  .preset-btn:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  .preset-btn:active {
+    transform: translateY(-1px);
+  }
+
+  body.theme-terminal .preset-btn:hover {
+    box-shadow: 0 0 20px rgba(0,255,68,0.25);
+  }
+
+  body.theme-retro .preset-btn:hover {
+    box-shadow: 3px 3px 0 var(--accent);
+    transform: translate(-2px, -2px);
+  }
+
+  body.theme-aero .preset-btn {
+    background: rgba(255,255,255,0.5);
+    border: 1.5px solid rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+  }
+
+  body.theme-soft .preset-btn {
+    border-radius: 16px;
+  }
+
+  .preset-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .preset-name {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text);
+    position: relative;
+    z-index: 1;
+  }
+
+  body.theme-terminal .preset-name { color: var(--accent); }
+
+  .preset-desc {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.3;
+    position: relative;
+    z-index: 1;
+    letter-spacing: 0.02em;
+  }
+
+  /* ═══════════ RESPONSIVE ═══════════ */
+
+  @media (max-width: 500px) {
+    .card { padding: 24px 18px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .input-row { grid-template-columns: 1fr; }
+    .presets-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body class="theme-dark">
+
+<div class="app">
+  <header>
+    <div class="logo">TIMEBAR</div>
+    <div class="tagline">Visualize o progresso do tempo</div>
+  </header>
+
+  <!-- THEME SWITCHER -->
+  <div class="theme-bar">
+    <button class="theme-btn" data-theme="minimal">Minimal</button>
+    <button class="theme-btn" data-theme="aero">Frutiger Aero</button>
+    <button class="theme-btn" data-theme="terminal">terminal</button>
+    <button class="theme-btn" data-theme="retro">Retro</button>
+    <button class="theme-btn" data-theme="soft">Soft</button>
+    <button class="theme-btn active" data-theme="dark">Dark</button>
+  </div>
+
+  <!-- PRESETS CARD -->
+  <div class="card" id="presetsCard">
+    <div class="card-title">Presets</div>
+    <div class="presets-grid">
+      <button class="preset-btn" data-preset="year">
+        <span class="preset-icon">📅</span>
+        <span class="preset-name">Ano</span>
+        <span class="preset-desc" id="desc-year"></span>
+      </button>
+      <button class="preset-btn" data-preset="month">
+        <span class="preset-icon">🗓️</span>
+        <span class="preset-name">Mês</span>
+        <span class="preset-desc" id="desc-month"></span>
+      </button>
+      <button class="preset-btn" data-preset="week">
+        <span class="preset-icon">📆</span>
+        <span class="preset-name">Semana</span>
+        <span class="preset-desc" id="desc-week"></span>
+      </button>
+      <button class="preset-btn" data-preset="day">
+        <span class="preset-icon">🌅</span>
+        <span class="preset-name">Dia</span>
+        <span class="preset-desc" id="desc-day"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CONFIG CARD -->
+  <div class="card" id="configCard">
+    <div class="card-title">Configurar</div>
+
+    <!-- MODE TABS -->
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="datetime">📅 Data/Hora</button>
+      <button class="mode-tab" data-mode="duration">⏱ Duração</button>
+      <button class="mode-tab" data-mode="clock">🕐 Dia de Hoje</button>
+    </div>
+
+    <!-- DATETIME MODE -->
+    <div class="inputs-grid" id="mode-datetime">
+      <div class="input-group">
+        <label>Data de Início</label>
+        <input type="date" id="startDate">
+      </div>
+      <div class="input-group">
+        <label>Data de Fim</label>
+        <input type="date" id="endDate">
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Hora Início</label>
+          <input type="time" id="startTime" value="08:00">
+        </div>
+        <div class="input-group">
+          <label>Hora Fim</label>
+          <input type="time" id="endTime" value="18:00">
+        </div>
+      </div>
+    </div>
+
+    <!-- DURATION MODE -->
+    <div class="inputs-grid" id="mode-duration" style="display:none">
+      <div class="input-row">
+        <div class="input-group">
+          <label>Horas</label>
+          <input type="number" id="durHours" min="0" max="99" value="0" placeholder="0">
+        </div>
+        <div class="input-group">
+          <label>Minutos</label>
+          <input type="number" id="durMin" min="0" max="59" value="25" placeholder="25">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Segundos</label>
+        <input type="number" id="durSec" min="0" max="59" value="0" placeholder="0">
+      </div>
+    </div>
+
+    <!-- CLOCK MODE -->
+    <div class="inputs-grid" id="mode-clock" style="display:none">
+      <div class="input-row">
+        <div class="input-group">
+          <label>Início do dia</label>
+          <input type="time" id="clockStart" value="00:00">
+        </div>
+        <div class="input-group">
+          <label>Fim do dia</label>
+          <input type="time" id="clockEnd" value="23:59">
+        </div>
+      </div>
+      <p style="font-size:0.8rem;color:var(--muted);">Mostra quanto do período já passou em tempo real.</p>
+    </div>
+
+    <button class="btn-start" onclick="startProgress()">▶ INICIAR</button>
+  </div>
+
+  <!-- PROGRESS CARD -->
+  <div class="card progress-card" id="progressCard">
+    <div class="card-title" id="progressTitle">Progresso</div>
+
+    <!-- Big Timer -->
+    <div class="big-timer" id="bigTimer">00:00:00</div>
+
+    <!-- Bar -->
+    <div class="progress-header">
+      <span class="progress-label" id="barLabel">Decorrido</span>
+      <span class="progress-pct" id="pctDisplay">0%</span>
+    </div>
+
+    <div class="bar-track">
+      <div class="bar-fill" id="barFill" style="width:0%"></div>
+    </div>
+
+    <!-- Secondary bar -->
+    <div class="elapsed-bar" style="display:none" id="secondaryBar">
+      <div class="elapsed-fill" id="elapsedFill" style="width:0%"></div>
+    </div>
+    <div class="elapsed-label" id="elapsedLabel" style="display:none">
+      <span id="elapsedLeft">início</span>
+      <span id="elapsedRight">fim</span>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-box">
+        <span class="stat-value" id="statElapsed">—</span>
+        <span class="stat-label">Decorrido</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-value" id="statRemaining">—</span>
+        <span class="stat-label">Restante</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-value" id="statTotal">—</span>
+        <span class="stat-label">Total</span>
+      </div>
+    </div>
+
+    <!-- Done -->
+    <div class="done-overlay" id="doneOverlay">
+      <div class="done-emoji" id="doneEmoji">🎉</div>
+      <div class="done-title">CONCLUÍDO!</div>
+      <div class="done-sub" id="doneSub">O tempo acabou.</div>
+      <button class="btn-reset" onclick="resetProgress()">↺ REINICIAR</button>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn-reset" onclick="resetProgress()" style="font-size:0.75rem;padding:8px 20px;">
+        ↩ Voltar
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ═══════════ PRESETS ═══════════
+  const MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const WEEKDAYS_PT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  function initPresetDescs() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const d = now.getDate();
+
+    // Year
+    const yearStart = new Date(y, 0, 1);
+    const yearEnd = new Date(y, 11, 31, 23, 59, 59);
+    const yearPct = ((now - yearStart) / (yearEnd - yearStart) * 100).toFixed(1);
+    document.getElementById('desc-year').textContent = `${y} · ${yearPct}%`;
+
+    // Month
+    const monthEnd = new Date(y, m+1, 0, 23, 59, 59);
+    const monthPct = ((now - new Date(y, m, 1)) / (monthEnd - new Date(y, m, 1)) * 100).toFixed(1);
+    document.getElementById('desc-month').textContent = `${MONTHS_PT[m]} · ${monthPct}%`;
+
+    // Week (Mon–Sun)
+    const dow = now.getDay(); // 0=sun
+    const monday = new Date(now); monday.setDate(d - (dow === 0 ? 6 : dow - 1)); monday.setHours(0,0,0,0);
+    const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6); sunday.setHours(23,59,59,999);
+    const weekPct = ((now - monday) / (sunday - monday) * 100).toFixed(1);
+    document.getElementById('desc-week').textContent = `${WEEKDAYS_PT[monday.getDay()]}–${WEEKDAYS_PT[sunday.getDay()]} · ${weekPct}%`;
+
+    // Day
+    const dayStart = new Date(now); dayStart.setHours(0,0,0,0);
+    const dayEnd = new Date(now); dayEnd.setHours(23,59,59,999);
+    const dayPct = ((now - dayStart) / (dayEnd - dayStart) * 100).toFixed(1);
+    document.getElementById('desc-day').textContent = `Hoje · ${dayPct}%`;
+  }
+
+  initPresetDescs();
+
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const preset = btn.dataset.preset;
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = now.getMonth();
+      const d = now.getDate();
+      const pad = n => String(n).padStart(2,'0');
+      const fmt = dt => `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+
+      let s, e;
+
+      if (preset === 'year') {
+        s = new Date(y, 0, 1, 0, 0);
+        e = new Date(y, 11, 31, 23, 59);
+      } else if (preset === 'month') {
+        s = new Date(y, m, 1, 0, 0);
+        e = new Date(y, m+1, 0, 23, 59);
+      } else if (preset === 'week') {
+        const dow = now.getDay();
+        s = new Date(now); s.setDate(d - (dow === 0 ? 6 : dow - 1)); s.setHours(0, 0, 0, 0);
+        e = new Date(s); e.setDate(s.getDate() + 6); e.setHours(23, 59, 0, 0);
+      } else if (preset === 'day') {
+        s = new Date(y, m, d, 0, 0);
+        e = new Date(y, m, d, 23, 59);
+      }
+
+      // Switch to datetime mode and fill fields
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('[data-mode="datetime"]').classList.add('active');
+      currentMode = 'datetime';
+      ['datetime','duration','clock'].forEach(mo => {
+        document.getElementById('mode-' + mo).style.display = mo === 'datetime' ? 'grid' : 'none';
+      });
+
+      document.getElementById('startDate').value = fmt(s);
+      document.getElementById('endDate').value = fmt(e);
+      document.getElementById('startTime').value = `${pad(s.getHours())}:${pad(s.getMinutes())}`;
+      document.getElementById('endTime').value = `${pad(e.getHours())}:${pad(e.getMinutes())}`;
+
+      // Scroll to config and highlight it briefly
+      document.getElementById('configCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      document.getElementById('configCard').style.borderColor = 'var(--accent)';
+      setTimeout(() => document.getElementById('configCard').style.borderColor = '', 600);
+
+      startProgress();
+    });
+  });
+
+  // ═══════════ THEME ═══════════
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.body.className = 'theme-' + btn.dataset.theme;
+    });
+  });
+
+  // ═══════════ MODE TABS ═══════════
+  let currentMode = 'datetime';
+  document.querySelectorAll('.mode-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentMode = tab.dataset.mode;
+      ['datetime','duration','clock'].forEach(m => {
+        document.getElementById('mode-' + m).style.display = m === currentMode ? 'grid' : 'none';
+      });
+    });
+  });
+
+  // ═══════════ DEFAULTS ═══════════
+  const today = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const todayStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+  document.getElementById('startDate').value = todayStr;
+  document.getElementById('endDate').value = todayStr;
+
+  // ═══════════ STATE ═══════════
+  let timerInterval = null;
+  let startMs = 0, endMs = 0, totalMs = 0;
+  let isDuration = false;
+  let durationEndMs = 0;
+
+  // ═══════════ HELPERS ═══════════
+  function fmtDuration(ms) {
+    if (ms <= 0) return '00:00:00';
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+  }
+
+  function fmtHuman(ms) {
+    if (ms <= 0) return '0s';
+    const totalSec = Math.floor(ms / 1000);
+    if (totalSec < 60) return `${totalSec}s`;
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    if (m < 60) return s > 0 ? `${m}m ${s}s` : `${m}m`;
+    const h = Math.floor(m / 60);
+    const rm = m % 60;
+    return rm > 0 ? `${h}h ${rm}m` : `${h}h`;
+  }
+
+  // ═══════════ START ═══════════
+  function startProgress() {
+    const now = Date.now();
+
+    if (currentMode === 'datetime') {
+      const sd = document.getElementById('startDate').value;
+      const ed = document.getElementById('endDate').value;
+      const st = document.getElementById('startTime').value;
+      const et = document.getElementById('endTime').value;
+      if (!sd || !ed || !st || !et) return alert('Preencha todos os campos!');
+      startMs = new Date(`${sd}T${st}`).getTime();
+      endMs = new Date(`${ed}T${et}`).getTime();
+      if (endMs <= startMs) return alert('A data/hora de fim deve ser maior que a de início!');
+      totalMs = endMs - startMs;
+      isDuration = false;
+      document.getElementById('progressTitle').textContent = 'Progresso de Data/Hora';
+    }
+
+    else if (currentMode === 'duration') {
+      const h = parseInt(document.getElementById('durHours').value) || 0;
+      const m = parseInt(document.getElementById('durMin').value) || 0;
+      const s = parseInt(document.getElementById('durSec').value) || 0;
+      totalMs = (h * 3600 + m * 60 + s) * 1000;
+      if (totalMs <= 0) return alert('Defina uma duração!');
+      startMs = now;
+      endMs = now + totalMs;
+      isDuration = true;
+      document.getElementById('progressTitle').textContent = 'Contagem Regressiva';
+    }
+
+    else if (currentMode === 'clock') {
+      const cs = document.getElementById('clockStart').value;
+      const ce = document.getElementById('clockEnd').value;
+      if (!cs || !ce) return alert('Preencha os horários!');
+      const [sh, sm] = cs.split(':').map(Number);
+      const [eh, em] = ce.split(':').map(Number);
+      const base = new Date(); base.setSeconds(0, 0);
+      const s = new Date(base); s.setHours(sh, sm, 0, 0);
+      const e = new Date(base); e.setHours(eh, em, 0, 0);
+      if (e <= s) return alert('O horário de fim deve ser maior!');
+      startMs = s.getTime();
+      endMs = e.getTime();
+      totalMs = endMs - startMs;
+      isDuration = false;
+      document.getElementById('progressTitle').textContent = 'Progresso do Dia';
+    }
+
+    // show progress
+    document.getElementById('configCard').style.display = 'none';
+    document.getElementById('progressCard').classList.add('visible');
+    document.getElementById('doneOverlay').classList.remove('visible');
+
+    if (timerInterval) clearInterval(timerInterval);
+    updateProgress();
+    timerInterval = setInterval(updateProgress, 250);
+  }
+
+  // ═══════════ UPDATE ═══════════
+  function updateProgress() {
+    const now = Date.now();
+    let elapsed, remaining, pct;
+
+    if (isDuration) {
+      elapsed = Math.min(now - startMs, totalMs);
+      remaining = Math.max(endMs - now, 0);
+      pct = Math.min((elapsed / totalMs) * 100, 100);
+    } else {
+      const clamped = Math.max(startMs, Math.min(now, endMs));
+      elapsed = clamped - startMs;
+      remaining = Math.max(endMs - now, 0);
+      pct = Math.min((elapsed / totalMs) * 100, 100);
+    }
+
+    // Big timer
+    document.getElementById('bigTimer').textContent = isDuration
+      ? fmtDuration(remaining)
+      : fmtDuration(elapsed);
+
+    // Bar
+    document.getElementById('barFill').style.width = pct.toFixed(2) + '%';
+    document.getElementById('pctDisplay').textContent = pct.toFixed(1) + '%';
+    document.getElementById('barLabel').textContent = isDuration ? 'Contagem Regressiva' : 'Decorrido';
+
+    // Stats
+    document.getElementById('statElapsed').textContent = fmtHuman(elapsed);
+    document.getElementById('statRemaining').textContent = fmtHuman(remaining);
+    document.getElementById('statTotal').textContent = fmtHuman(totalMs);
+
+    // Done?
+    if (pct >= 100) {
+      clearInterval(timerInterval);
+      document.getElementById('barFill').style.width = '100%';
+      document.getElementById('pctDisplay').textContent = '100%';
+      document.getElementById('bigTimer').textContent = isDuration ? '00:00:00' : fmtDuration(totalMs);
+      document.getElementById('doneOverlay').classList.add('visible');
+      document.getElementById('doneEmoji').textContent = isDuration ? '⏰' : '🎉';
+      document.getElementById('doneSub').textContent = isDuration
+        ? 'Temporizador finalizado!'
+        : 'Período concluído!';
+    }
+  }
+
+  // ═══════════ RESET ═══════════
+  function resetProgress() {
+    if (timerInterval) clearInterval(timerInterval);
+    document.getElementById('progressCard').classList.remove('visible');
+    document.getElementById('doneOverlay').classList.remove('visible');
+    document.getElementById('configCard').style.display = 'block';
+    document.getElementById('barFill').style.width = '0%';
+    document.getElementById('pctDisplay').textContent = '0%';
+    document.getElementById('bigTimer').textContent = '00:00:00';
+  }
+</script>
+</body>
+</html>
