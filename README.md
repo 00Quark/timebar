@@ -1,5 +1,7 @@
 # ⏳ TimeBar
 
+[![Acessar TimeBar](https://img.shields.io/badge/Acessar%20Site-TimeBar-00bfff?style=for-the-badge&logo=vercel&logoColor=white)](https://delta-os-site.vercel.app/) 
+
 > *"O tempo passa de qualquer forma. Pelo menos agora você pode assistir."*
 
 O **TimeBar** é uma aplicação web de visualização de progresso temporal. Desenvolvida como uma Single-Page Application sem dependências externas, ela transforma qualquer intervalo de tempo — uma data, uma duração ou o próprio dia — em uma barra de carregamento viva, com temas visuais radicalmente distintos entre si.
@@ -56,4 +58,19 @@ Use o seletor de temas no topo — cada card mostra um preview de cores do tema 
 
 ---
 
+## ⚙️ Acesso e Execução
+
+Você pode acessar o sistema diretamente pelo navegador através do link oficial hospedado na Vercel, ou rodar localmente na sua máquina.
+
+### 🌐 Acesso Direto (Live)
+Clique no botão no topo da página ou acesse: **[timebar-site.vercel.app](https://timebar.vercel.app/)**
+
+### 🖥️ Rodando Localmente
+Caso queira testar o código na sua máquina, não é necessária nenhuma instalação complexa de servidores.
+
+1. Clone este repositório:
+   ```bash
+   git clone [https://github.com/00Quark/timebar.git](https://github.com/00Quark/timebar.git)
+
+---
 *tic-tac-tic-tac*
